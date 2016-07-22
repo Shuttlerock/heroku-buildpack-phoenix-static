@@ -37,6 +37,21 @@ install_node() {
   PATH=$heroku_dir/node/bin:$PATH
 }
 
+export_env_dir() {
+  local env_dir=$1
+  if [ -d "$env_dir" ]; then
+    local whitelist_regex=${2:-''}
+    local blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH|LANG)$'}
+    if [ -d "$env_dir" ]; then
+      for e in $(ls $env_dir); do
+        echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
+        export "$e=$(cat $env_dir/$e)"
+        :
+      done
+    fi
+  fi
+}
+
 install_npm() {
   # Optionally bootstrap a different npm version
   if [ ! $npm_version ] || [[ `npm --version` == "$npm_version" ]]; then
@@ -44,6 +59,7 @@ install_npm() {
   else
     info "Downloading and installing npm $npm_version (replacing version `npm --version`)..."
     cd $build_dir
+    export_env_dir
     npm install --unsafe-perm --quiet -g npm@$npm_version 2>&1 >/dev/null | indent
   fi
 }
@@ -77,21 +93,6 @@ install_bower_deps() {
     fi
     bower install
     cp -r bower_components $cache_dir
-  fi
-}
-
-export_env_dir() {
-  local env_dir=$1
-  if [ -d "$env_dir" ]; then
-    local whitelist_regex=${2:-''}
-    local blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH|LANG)$'}
-    if [ -d "$env_dir" ]; then
-      for e in $(ls $env_dir); do
-        echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
-        export "$e=$(cat $env_dir/$e)"
-        :
-      done
-    fi
   fi
 }
 
