@@ -80,12 +80,29 @@ install_bower_deps() {
   fi
 }
 
+export_env_dir() {
+  local env_dir=$1
+  if [ -d "$env_dir" ]; then
+    local whitelist_regex=${2:-''}
+    local blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH|LANG)$'}
+    if [ -d "$env_dir" ]; then
+      for e in $(ls $env_dir); do
+        echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
+        export "$e=$(cat $env_dir/$e)"
+        :
+      done
+    fi
+  fi
+}
+
 compile() {
   cd $phoenix_dir
   PATH=$build_dir/.platform_tools/erlang/bin:$PATH
   PATH=$build_dir/.platform_tools/elixir/bin:$PATH
 
   run_compile
+  export_env_dir
+  npm run build
 }
 
 run_compile() {
