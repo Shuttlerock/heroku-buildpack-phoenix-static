@@ -38,7 +38,6 @@ install_node() {
 }
 
 export_env_dir() {
-  local env_dir=$1
   if [ -d "$env_dir" ]; then
     local whitelist_regex=${2:-''}
     local blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH|LANG)$'}
@@ -50,6 +49,7 @@ export_env_dir() {
       done
     fi
   fi
+  env
 }
 
 install_npm() {
@@ -59,6 +59,7 @@ install_npm() {
   else
     info "Downloading and installing npm $npm_version (replacing version `npm --version`)..."
     cd $build_dir
+    printenv | info
     export_env_dir
     npm install --unsafe-perm --quiet -g npm@$npm_version 2>&1 >/dev/null | indent
   fi
@@ -71,6 +72,7 @@ install_and_cache_npm_deps() {
     mkdir -p node_modules
     cp -r $cache_dir/node_modules/* node_modules/
   fi
+  printenv | info
   export_env_dir
   npm install --quiet --unsafe-perm --userconfig $build_dir/npmrc 2>&1 | indent
   npm rebuild 2>&1 | indent
