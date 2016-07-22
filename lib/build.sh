@@ -55,7 +55,7 @@ install_and_cache_npm_deps() {
     mkdir -p node_modules
     cp -r $cache_dir/node_modules/* node_modules/
   fi
-
+  export_env_dir
   npm install --quiet --unsafe-perm --userconfig $build_dir/npmrc 2>&1 | indent
   npm rebuild 2>&1 | indent
   npm --unsafe-perm prune 2>&1 | indent
@@ -101,8 +101,6 @@ compile() {
   PATH=$build_dir/.platform_tools/elixir/bin:$PATH
 
   run_compile
-  export_env_dir
-  npm run build
 }
 
 run_compile() {
